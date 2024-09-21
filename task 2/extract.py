@@ -10,9 +10,12 @@ rus_to_eng = {
 eng_to_rus = {v: k for k, v in rus_to_eng.items()}
 
 def binary_to_text(binary_message):
-    """Преобразование бинарного сообщения в текст."""
+    # Останавливаем преобразование, если встречаем нулевой байт
+    if '00000000' in binary_message:
+        binary_message = binary_message[:binary_message.index('00000000')]
     chars = [chr(int(binary_message[i:i+8], 2)) for i in range(0, len(binary_message), 8)]
     return ''.join(chars)
+
 
 def extract_message(container_text):
     """Извлечение скрытого сообщения из текста-контейнера."""
@@ -39,7 +42,7 @@ def extract_hidden_message(container_file, output_message_file):
     print(f"Скрытое сообщение извлечено и сохранено в {output_message_file}")
 
 # Пример использования
-container_file = input("Введите путь к файлу-контейнеру: ")
-output_message_file = input("Введите путь к файлу для скрытого сообщения: ")
+container_file = "code.txt"
+output_message_file = "message.txt "
 
 extract_hidden_message(container_file, output_message_file)

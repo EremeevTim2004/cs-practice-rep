@@ -12,7 +12,7 @@ eng_to_rus = {v: k for k, v in rus_to_eng.items()}
 def text_to_binary(text):
     """Преобразование текста в бинарный формат."""
     binary_text = ''.join(format(ord(c), '08b') for c in text)
-    return binary_text
+    return binary_text + '00000000'
 
 def hide_message(container_text, secret_message):
     """Скрытие бинарного сообщения в тексте-контейнере."""
@@ -47,9 +47,8 @@ def save_hidden_message(container_file, message_file, output_file):
 
     print(f"Скрытая информация записана в файл {output_file}")
 
-# Пример использования
-container_file = input("Введите путь к файлу-контейнеру: ")
-message_file = input("Введите путь к файлу с секретным сообщением: ")
-output_file = input("Введите путь к выходному файлу: ")
+container_file = "container.txt"
+message_file = "secret.txt"
+output_file = "code.txt"
 
 save_hidden_message(container_file, message_file, output_file)
