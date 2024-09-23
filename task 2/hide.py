@@ -34,15 +34,15 @@ def hide_message(container_text, secret_message):
 
 def save_hidden_message(container_file, message_file, output_file):
     """Чтение файлов и сохранение контейнера с скрытым сообщением."""
-    with open(container_file, 'r', encoding='utf-8') as f_container:
+    with open(container_file, 'r', encoding='koi8-r') as f_container:
         container_text = f_container.read()
 
-    with open(message_file, 'r', encoding='utf-8') as f_message:
+    with open(message_file, 'r', encoding='koi8-r') as f_message:
         secret_message = f_message.read()
 
     hidden_text = hide_message(container_text, secret_message)
 
-    with open(output_file, 'w', encoding='utf-8') as f_output:
+    with open(output_file, 'w', encoding='koi8-r') as f_output:
         f_output.write(hidden_text)
 
     print(f"Скрытая информация записана в файл {output_file}")

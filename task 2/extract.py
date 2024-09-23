@@ -31,12 +31,12 @@ def extract_message(container_text):
 
 def extract_hidden_message(container_file, output_message_file):
     """Чтение файла-контейнера и извлечение скрытого сообщения."""
-    with open(container_file, 'r', encoding='utf-8') as f_container:
+    with open(container_file, 'r', encoding='koi8-r') as f_container:
         container_text = f_container.read()
 
     secret_message = extract_message(container_text)
 
-    with open(output_message_file, 'w', encoding='utf-8') as f_output:
+    with open(output_message_file, 'w', encoding='koi8-r') as f_output:
         f_output.write(secret_message)
 
     print(f"Скрытое сообщение извлечено и сохранено в {output_message_file}")
