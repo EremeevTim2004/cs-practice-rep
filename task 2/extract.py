@@ -1,48 +1,43 @@
-# Модуль для извлечения скрытой информации
+# Массивы для русских и латинских букв-замен
+rus_letters = ['а', 'е', 'о', 'р', 'с', 'у', 'х', 'А', 'В', 'Е', 'К', 'О', 'Р', 'С', 'Т', 'Х']
+eng_letters = ['a', 'e', 'o', 'p', 'c', 'y', 'x', 'A', 'B', 'E', 'K', 'O', 'P', 'C', 'T', 'X']
 
-# Словарь русских букв и их аналогов в английском языке
-rus_to_eng = {
-    'а': 'a', 'е': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 'у': 'y', 'х': 'x',
-    'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X'
-}
+container_with_hidden_info_file = 'code.txt'
+output_secret_message_file = 'message.txt'
 
-# Обратный словарь: английские буквы и их русские аналоги
-eng_to_rus = {v: k for k, v in rus_to_eng.items()}
+def bin_to_text(bin_str):
+    """Преобразование бинарного представления в текст с учётом кодировки CP1251."""
+    byte_array = bytearray()
+    for i in range(0, len(bin_str), 8):
+        byte = bin_str[i:i+8]
+        byte_array.append(int(byte, 2))
+    
+    return byte_array.decode('cp1251')
 
-def binary_to_text(binary_message):
-    # Останавливаем преобразование, если встречаем нулевой байт
-    if '00000000' in binary_message:
-        binary_message = binary_message[:binary_message.index('00000000')]
-    chars = [chr(int(binary_message[i:i+8], 2)) for i in range(0, len(binary_message), 8)]
-    return ''.join(chars)
+def extract_info_from_container(container):
+    """Извлечение скрытой информации из контейнера."""
+    secret_message_bin = []
+    
+    for char in container:
+        if char in rus_letters:
+            # Если буква осталась русской, значит бит = 0
+            secret_message_bin.append('0')
+        elif char in eng_letters:
+            # Если буква заменена на английский аналог, значит бит = 1
+            secret_message_bin.append('1')
+    
+    return ''.join(secret_message_bin)
 
+# Чтение контейнера
+with open(container_with_hidden_info_file, 'r', encoding='cp1251') as container_f:
+    container_text = container_f.read()
 
-def extract_message(container_text):
-    """Извлечение скрытого сообщения из текста-контейнера."""
-    binary_message = []
+# Извлечение бинарного сообщения
+secret_message_bin = extract_info_from_container(container_text)
 
-    for char in container_text:
-        if char in rus_to_eng:
-            binary_message.append('0')  # Русская буква
-        elif char in eng_to_rus:
-            binary_message.append('1')  # Латинская буква
+# Преобразование бинарного сообщения в текст
+secret_message = bin_to_text(secret_message_bin)
 
-    return binary_to_text(''.join(binary_message))
-
-def extract_hidden_message(container_file, output_message_file):
-    """Чтение файла-контейнера и извлечение скрытого сообщения."""
-    with open(container_file, 'r', encoding='koi8-r') as f_container:
-        container_text = f_container.read()
-
-    secret_message = extract_message(container_text)
-
-    with open(output_message_file, 'w', encoding='koi8-r') as f_output:
-        f_output.write(secret_message)
-
-    print(f"Скрытое сообщение извлечено и сохранено в {output_message_file}")
-
-# Пример использования
-container_file = "code.txt"
-output_message_file = "message.txt "
-
-extract_hidden_message(container_file, output_message_file)
+# Запись извлеченного сообщения
+with open(output_secret_message_file, 'w', encoding='cp1251') as output_f:
+    output_f.write(secret_message)
