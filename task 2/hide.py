@@ -1,47 +1,37 @@
-# coding: cp1251
+from functools import reduce
+from letter_map import letter_map
 
-# Массивы для русских и латинских букв-замен
-rus_letters = ['а', 'е', 'о', 'р', 'с', 'у', 'х', 'А', 'В', 'Е', 'К', 'О', 'Р', 'С', 'Т', 'Х']
-eng_letters = ['a', 'e', 'o', 'p', 'c', 'y', 'x', 'A', 'B', 'E', 'K', 'O', 'P', 'C', 'T', 'X']
 
-# Чтение файлов
-container_file = 'container.txt'
-secret_message_file = 'secret.txt'
-output_file = 'code.txt'
+def save_container(container_path, message):
+    binary_data = message.encode('cp1251')
+    secret_bits = reduce(lambda acc, bit_item: acc + bin(bit_item)[2:].rjust(8, '0'), binary_data, '')
+    secret_bits = secret_bits + '00000000'
+    print(secret_bits)
 
-def text_to_bin(text):
-    """Преобразование текста в бинарное представление с учетом кодировки CP1251."""
-    binary_str = ''.join(format(ord(char), '08b') for char in text)
-    return binary_str
+    with open(container_path, "r", encoding="utf-8") as f:
+        container_content = f.read()
 
-def hide_info_in_container(container, secret_message_bin):
-    """Скрытие информации в контейнере."""
-    container_with_hidden_info = []
-    message_idx = 0
-    
-    for char in container:
-        if char in rus_letters and message_idx < len(secret_message_bin):
-            if secret_message_bin[message_idx] == '1':
-                # Заменяем русскую букву на английский аналог
-                char = eng_letters[rus_letters.index(char)]
-            message_idx += 1
-        container_with_hidden_info.append(char)
-    
-    return ''.join(container_with_hidden_info)
+    bit_index = 0
+    container_list = list(container_content)
 
-# Чтение файлов и обработка
-with open(container_file, 'r', encoding='cp1251') as container_f:
-    container_text = container_f.read()
+    # Проход по тексту контейнера
+    for i, char in enumerate(container_list):
+        if char in letter_map:  # Если символ контейнера имеет аналог
+            if bit_index < len(secret_bits):
+                bit = secret_bits[bit_index]
+                if bit == '1':  # Если бит 1, заменяем на англ. аналог
+                    container_list[i] = letter_map[char]
+                # Если бит 0, оставляем русскую букву без изменений
+                bit_index += 1
+            else:
+                break  # Если все биты были скрыты, завершаем цикл
 
-with open(secret_message_file, 'r', encoding='cp1251') as secret_f:
-    secret_message = secret_f.read()
+    with open(container_path, "w", encoding="utf-8") as f:
+        f.write(''.join(container_list))
 
-# Преобразование секретного сообщения в двоичный формат
-secret_message_bin = text_to_bin(secret_message)
 
-# Скрытие информации
-container_with_hidden_info = hide_info_in_container(container_text, secret_message_bin)
+message = "Aвг"
 
-# Запись результата в файл
-with open(output_file, 'w', encoding='cp1251') as output_f:
-    output_f.write(container_with_hidden_info)
+container_path = "./container.txt"
+
+save_container(container_path, message)

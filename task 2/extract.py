@@ -1,43 +1,43 @@
-# Массивы для русских и латинских букв-замен
-rus_letters = ['а', 'е', 'о', 'р', 'с', 'у', 'х', 'А', 'В', 'Е', 'К', 'О', 'Р', 'С', 'Т', 'Х']
-eng_letters = ['a', 'e', 'o', 'p', 'c', 'y', 'x', 'A', 'B', 'E', 'K', 'O', 'P', 'C', 'T', 'X']
+from letter_map import letter_map
 
-container_with_hidden_info_file = 'code.txt'
-output_secret_message_file = 'message.txt'
 
-def bin_to_text(bin_str):
-    """Преобразование бинарного представления в текст с учётом кодировки CP1251."""
-    byte_array = bytearray()
-    for i in range(0, len(bin_str), 8):
-        byte = bin_str[i:i+8]
-        byte_array.append(int(byte, 2))
-    
-    return byte_array.decode('cp1251')
+def bits_to_text(bits):
+    """Преобразование битовой строки обратно в текст."""
+    # Разбиваем биты на байты по 8 бит
+    byte_array = bytearray(int(bits[i:i + 8], 2) for i in range(0, len(bits), 8))
+    # Декодируем байты в текст с кодировкой cp1251
+    return byte_array.decode('cp1251', errors='ignore')
 
-def extract_info_from_container(container):
-    """Извлечение скрытой информации из контейнера."""
-    secret_message_bin = []
-    
-    for char in container:
-        if char in rus_letters:
-            # Если буква осталась русской, значит бит = 0
-            secret_message_bin.append('0')
-        elif char in eng_letters:
-            # Если буква заменена на английский аналог, значит бит = 1
-            secret_message_bin.append('1')
-    
-    return ''.join(secret_message_bin)
 
-# Чтение контейнера
-with open(container_with_hidden_info_file, 'r', encoding='cp1251') as container_f:
-    container_text = container_f.read()
+def extract_data(container_with_secret_file):
+    rus_to_eng = letter_map
+    eng_to_rus = {v: k for k, v in rus_to_eng.items()}
 
-# Извлечение бинарного сообщения
-secret_message_bin = extract_info_from_container(container_text)
+    with open(container_with_secret_file, 'r', encoding='utf-8') as container:
+        container_text = container.read()
 
-# Преобразование бинарного сообщения в текст
-secret_message = bin_to_text(secret_message_bin)
+    secret_bits = []
+    for char in container_text:
+        if char in rus_to_eng:  # Если это русская буква
+            secret_bits.append('0')
+        elif char in eng_to_rus:  # Если это англ. аналог
+            secret_bits.append('1')
 
-# Запись извлеченного сообщения
-with open(output_secret_message_file, 'w', encoding='cp1251') as output_f:
-    output_f.write(secret_message)
+        # Проверка на конец скрытого сообщения
+        if len(secret_bits) >= 8 and ''.join(secret_bits[-8:]) == '00000000':
+            # Удаляем маркер окончания
+            secret_bits = secret_bits[:-8]
+            break
+
+    print(''.join(secret_bits))
+    secret_text = bits_to_text(''.join(secret_bits))
+
+    with open('message.txt', 'w', encoding='utf-8') as message_file:
+        message_file.write(secret_text)
+
+    return secret_text
+
+
+container_with_secret_file = './container.txt'
+secret_message = extract_data(container_with_secret_file)
+print(f"Скрытое сообщение: {secret_message}")
