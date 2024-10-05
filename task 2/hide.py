@@ -1,7 +1,6 @@
 from functools import reduce
 from letter_map import letter_map
 
-
 def save_container(container_path, message):
     binary_data = message.encode('cp1251')
     secret_bits = reduce(lambda acc, bit_item: acc + bin(bit_item)[2:].rjust(8, '0'), binary_data, '')
@@ -28,7 +27,6 @@ def save_container(container_path, message):
 
     with open(container_path, "w", encoding="utf-8") as f:
         f.write(''.join(container_list))
-
 
 message = "Aвг"
 
